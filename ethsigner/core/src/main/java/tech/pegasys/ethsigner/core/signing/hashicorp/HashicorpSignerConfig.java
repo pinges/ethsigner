@@ -25,6 +25,4 @@ public interface HashicorpSignerConfig {
   Path getAuthFilePath();
 
   String getSigningKeyPath();
-
-  boolean isConfigured();
 }

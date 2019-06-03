@@ -14,7 +14,7 @@ package tech.pegasys.ethsigner.app;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import tech.pegasys.ethsigner.FileBasedSignerCLIConfig;
+import tech.pegasys.ethsigner.FileBasedSignerCommand;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -23,16 +23,16 @@ import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import picocli.CommandLine;
 
-public class FileBasedSignerCLIConfigTest {
+public class FileBasedSignerCommandTest {
 
   private static final String THIS_IS_THE_PATH_TO_THE_FILE = "/this/is/the/path/to/the/file";
   private final ByteArrayOutputStream commandOutput = new ByteArrayOutputStream();
   private final PrintStream outPrintStream = new PrintStream(commandOutput);
   private CommandLine commandLine;
-  private FileBasedSignerCLIConfig config;
+  private FileBasedSignerCommand config;
 
   private boolean parseCommand(final String cmdLine) {
-    config = new FileBasedSignerCLIConfig(outPrintStream);
+    config = new FileBasedSignerCommand(outPrintStream);
     commandLine = new CommandLine(config);
     commandLine.setCaseInsensitiveEnumValuesAllowed(true);
     commandLine.registerConverter(Level.class, Level::valueOf);

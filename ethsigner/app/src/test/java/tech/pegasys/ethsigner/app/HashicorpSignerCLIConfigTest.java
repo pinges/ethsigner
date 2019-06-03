@@ -14,7 +14,7 @@ package tech.pegasys.ethsigner.app;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import tech.pegasys.ethsigner.HashicorpSignerCLIConfig;
+import tech.pegasys.ethsigner.HashicorpSignerCommand;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -33,10 +33,10 @@ public class HashicorpSignerCLIConfigTest {
   private final ByteArrayOutputStream commandOutput = new ByteArrayOutputStream();
   private final PrintStream outPrintStream = new PrintStream(commandOutput);
   private CommandLine commandLine;
-  private HashicorpSignerCLIConfig hashiConfig;
+  private HashicorpSignerCommand hashiConfig;
 
   private boolean parseCommand(final String cmdLine) {
-    hashiConfig = new HashicorpSignerCLIConfig(outPrintStream);
+    hashiConfig = new HashicorpSignerCommand(outPrintStream);
     commandLine = new CommandLine(hashiConfig);
     commandLine.setCaseInsensitiveEnumValuesAllowed(true);
     commandLine.registerConverter(Level.class, Level::valueOf);
@@ -107,14 +107,14 @@ public class HashicorpSignerCLIConfigTest {
   public void missingOptionalParametersAreSetToDefault() {
     // Must recreate commandLineConfig before executions, to prevent stale data remaining in the
     // object.
-    HashicorpSignerCLIConfig hcConfig = new HashicorpSignerCLIConfig(outPrintStream);
+    HashicorpSignerCommand hcConfig = new HashicorpSignerCommand(outPrintStream);
     missingOptionalParameterIsValidAndMeetsDefault("host", hcConfig::getServerHost, "localhost");
 
-    hcConfig = new HashicorpSignerCLIConfig(outPrintStream);
+    hcConfig = new HashicorpSignerCommand(outPrintStream);
     missingOptionalParameterIsValidAndMeetsDefault(
         "host", hcConfig::getServerPort, Integer.valueOf(8200));
 
-    hcConfig = new HashicorpSignerCLIConfig(outPrintStream);
+    hcConfig = new HashicorpSignerCommand(outPrintStream);
     missingOptionalParameterIsValidAndMeetsDefault(
         "host", hcConfig::getSigningKeyPath, "/secret/data/ethsignerSigningKey");
   }

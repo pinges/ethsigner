@@ -12,7 +12,10 @@
  */
 package tech.pegasys.ethsigner;
 
-import tech.pegasys.ethsigner.core.signing.fileBased.FileBasedSignerConfig;
+import picocli.CommandLine.ParentCommand;
+import tech.pegasys.ethsigner.core.EthSigner;
+import tech.pegasys.ethsigner.core.RunnerBuilder;
+import tech.pegasys.ethsigner.core.signing.TransactionSigner;
 
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -22,28 +25,25 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
+import tech.pegasys.ethsigner.core.signing.fileBased.FileBasedSignerHelper;
 
 /** Hashicorp vault authentication related sub-command */
+// Requires helpCommand to ensure help is shown for this command, even if parent command required
+  //options are missing.
 @Command(
-    name = FileBasedSignerCLIConfig.COMMAND_NAME,
+    name = FileBasedSignerCommand.COMMAND_NAME,
     description = "This command provides file based signer related configuration data.",
-    mixinStandardHelpOptions = true)
-public class FileBasedSignerCLIConfig implements Runnable, FileBasedSignerConfig {
+    mixinStandardHelpOptions = true,
+    helpCommand = true
+    )
+public class FileBasedSignerCommand implements Runnable {
 
   public static final String COMMAND_NAME = "file-based-signer";
 
-  public FileBasedSignerCLIConfig(final PrintStream out) {
-    this.out = out;
-  }
+  @ParentCommand
+  private CommandLineConfig parentCommand;
 
   @Spec private CommandLine.Model.CommandSpec spec; // Picocli injects reference to command spec
-
-  private final PrintStream out;
-
-  @Override
-  public void run() {
-    spec.commandLine().usage(out);
-  }
 
   @Option(
       names = {"-p", "--password-file"},
@@ -61,25 +61,18 @@ public class FileBasedSignerCLIConfig implements Runnable, FileBasedSignerConfig
   private Path keyFile;
 
   @Override
-  public Path getPasswordFilePath() {
-    return passwordFilePath;
-  }
-
-  @Override
-  public Path getKeyPath() {
-    return keyFile;
-  }
-
-  @Override
-  public boolean isConfigured() {
-    return passwordFilePath != null && keyFile != null;
-  }
-
-  @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("passwordFilePath", passwordFilePath)
         .add("keyFile", keyFile)
         .toString();
+  }
+
+  @Override
+  public void run() {
+    //spec.commandLine().usage(output);
+    TransactionSigner transactionSigner = FileBasedSignerHelper.getSigner(passwordFilePath, keyFile);
+    EthSigner signer = new EthSigner(parentCommand, transactionSigner,  new RunnerBuilder());
+    signer.run();
   }
 }

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.ethsigner;
 
+import picocli.CommandLine.RunLast;
 import tech.pegasys.ethsigner.core.RunnerBuilder;
 import tech.pegasys.ethsigner.core.signing.TransactionSigner;
 import tech.pegasys.ethsigner.core.signing.fileBased.FileBasedSignerHelper;
@@ -22,42 +23,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 public class EthSignerApp {
+  private static final int SUCCESS_EXIT_CODE = 0;
+  private static final int ERROR_EXIT_CODE = 1;
 
   private static final Logger LOG = LogManager.getLogger();
 
   public static void main(final String... args) {
     final CommandLineConfig config = new CommandLineConfig(System.out);
-    if (!config.parse(args)) {
-      return;
-    }
 
-    // set log level per CLI flags
-    System.out.println("Setting logging level to " + config.getLogLevel().name());
-    Configurator.setAllLevels("", config.getLogLevel());
-
-    LOG.debug("Configuration = {}", config);
-    LOG.info("Version = {}, ", ApplicationInfo.version());
-
-    // create a signer based on the configuration provided
-    TransactionSigner signer = createTransactionSigner(config);
-
-    if (signer == null) {
-      LOG.error("Cannot create a signer from the given config: " + config.toString());
-      System.exit(-1);
-    }
-
-    final tech.pegasys.ethsigner.core.EthSigner ethSigner =
-        new tech.pegasys.ethsigner.core.EthSigner(config, signer, new RunnerBuilder());
-    ethSigner.run();
-  }
-
-  private static TransactionSigner createTransactionSigner(CommandLineConfig config) {
-    TransactionSigner signer = null;
-    if (config.getHashicorpSignerConfig().isConfigured()) {
-      signer = HashicorpSignerHelper.getSigner(config.getHashicorpSignerConfig());
-    } else if (config.getFileBasedSignerConfig().isConfigured()) {
-      signer = FileBasedSignerHelper.getSigner(config.getFileBasedSignerConfig());
-    }
-    return signer;
+    config.parse(new RunLast(), args);
   }
 }

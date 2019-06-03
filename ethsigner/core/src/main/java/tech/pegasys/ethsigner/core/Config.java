@@ -39,8 +39,4 @@ public interface Config {
   ChainIdProvider getChainId();
 
   Path getDataDirectory();
-
-  HashicorpSignerConfig getHashicorpSignerConfig();
-
-  FileBasedSignerConfig getFileBasedSignerConfig();
 }

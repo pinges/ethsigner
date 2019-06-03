@@ -12,11 +12,11 @@
  */
 package tech.pegasys.ethsigner;
 
+import java.util.List;
+import picocli.CommandLine.AbstractParseResultHandler;
 import tech.pegasys.ethsigner.core.Config;
 import tech.pegasys.ethsigner.core.signing.ChainIdProvider;
 import tech.pegasys.ethsigner.core.signing.ConfigurationChainId;
-import tech.pegasys.ethsigner.core.signing.fileBased.FileBasedSignerConfig;
-import tech.pegasys.ethsigner.core.signing.hashicorp.HashicorpSignerConfig;
 
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -102,32 +102,33 @@ public class CommandLineConfig implements Config {
       arity = "1")
   private Path dataDirectory;
 
-  private final PrintStream output;
+  protected final PrintStream output;
 
   public CommandLineConfig(PrintStream output) {
     this.output = output;
   }
 
-  private HashicorpSignerCLIConfig hashicorpSignerBasedConfig;
+  private HashicorpSignerCommand hashicorpSignerBasedConfig;
 
-  private FileBasedSignerCLIConfig fileBasedSignerConfig;
+  private FileBasedSignerCommand fileBasedSignerConfig;
 
-  public boolean parse(final String... args) {
+  public boolean parse(final AbstractParseResultHandler<List<Object>> resultHandler,
+      final String... args) {
 
     commandLine = new CommandLine(this);
     commandLine.setCaseInsensitiveEnumValuesAllowed(true);
     commandLine.registerConverter(Level.class, Level::valueOf);
 
-    hashicorpSignerBasedConfig = new HashicorpSignerCLIConfig(output);
-    commandLine.addSubcommand(HashicorpSignerCLIConfig.COMMAND_NAME, hashicorpSignerBasedConfig);
+    hashicorpSignerBasedConfig = new HashicorpSignerCommand(output);
+    commandLine.addSubcommand(HashicorpSignerCommand.COMMAND_NAME, hashicorpSignerBasedConfig);
 
-    fileBasedSignerConfig = new FileBasedSignerCLIConfig(output);
-    commandLine.addSubcommand(FileBasedSignerCLIConfig.COMMAND_NAME, fileBasedSignerConfig);
+    fileBasedSignerConfig = new FileBasedSignerCommand();
+    commandLine.addSubcommand(FileBasedSignerCommand.COMMAND_NAME, fileBasedSignerConfig);
 
     // Must manually show the usage/version info, as per the design of picocli
     // (https://picocli.info/#_printing_help_automatically)
     try {
-      commandLine.parse(args);
+      commandLine.parseWithHandlers(resultHandler, null, args);
     } catch (ParameterException ex) {
       handleParseException(ex);
       return false;
@@ -190,16 +191,6 @@ public class CommandLineConfig implements Config {
   }
 
   @Override
-  public HashicorpSignerConfig getHashicorpSignerConfig() {
-    return hashicorpSignerBasedConfig;
-  }
-
-  @Override
-  public FileBasedSignerConfig getFileBasedSignerConfig() {
-    return fileBasedSignerConfig;
-  }
-
-  @Override
   public Duration getDownstreamHttpRequestTimeout() {
     return Duration.ofMillis(downstreamHttpRequestTimeout);
   }
@@ -217,8 +208,6 @@ public class CommandLineConfig implements Config {
         .add("chainId", chainId)
         .add("dataDirectory", dataDirectory)
         .add("output", output)
-        .add("hashicorpSignerConfig", hashicorpSignerBasedConfig)
-        .add("filebasedSignerConfig", fileBasedSignerConfig)
         .toString();
   }
 }

@@ -12,6 +12,7 @@
  */
 package tech.pegasys.ethsigner.core.signing.fileBased;
 
+import java.nio.file.Path;
 import tech.pegasys.ethsigner.core.signing.CredentialTransactionSigner;
 import tech.pegasys.ethsigner.core.signing.TransactionSigner;
 
@@ -29,39 +30,40 @@ public class FileBasedSignerHelper {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  public static TransactionSigner getSigner(final FileBasedSignerConfig config) {
+  public static TransactionSigner getSigner(final Path passwordFile, final Path keyfile) {
     String password;
     try {
-      password = readPasswordFromFile(config);
+      password = readPasswordFromFile(passwordFile);
     } catch (IOException e) {
       LOG.error(
           "Error when reading the password from file using the following path:\n {}.",
-          config.getPasswordFilePath(),
+          passwordFile,
           e);
       return null;
     }
     Credentials credentials;
     try {
-      credentials = WalletUtils.loadCredentials(password, config.getKeyPath().toFile());
+      credentials = WalletUtils.loadCredentials(password, keyfile.toFile());
     } catch (IOException e) {
       LOG.error(
           "Error when reading key file for the file based signer using the following path:\n {}.",
-          config.getKeyPath(),
+          keyfile,
           e);
       return null;
     } catch (CipherException e) {
       LOG.error(
-          "Error when decrypting key for the file based signer using the following config:\n {}.",
-          config.toString(),
+          "Error when decrypting key file ({}) using supplied password file {}.",
+          keyfile,
+          passwordFile,
           e);
       return null;
     }
     return new CredentialTransactionSigner(credentials);
   }
 
-  private static String readPasswordFromFile(final FileBasedSignerConfig config)
+  private static String readPasswordFromFile(final Path passwordFile)
       throws IOException {
-    byte[] fileContent = Files.readAllBytes(config.getPasswordFilePath());
+    byte[] fileContent = Files.readAllBytes(passwordFile);
     return new String(fileContent, Charsets.UTF_8);
   }
 }
