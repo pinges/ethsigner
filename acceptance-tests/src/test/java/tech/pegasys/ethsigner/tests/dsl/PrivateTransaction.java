@@ -18,6 +18,8 @@ import java.math.BigInteger;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Optional;
+import org.web3j.utils.Numeric;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PrivateTransaction {
@@ -29,7 +31,7 @@ public class PrivateTransaction {
   private final String gas;
   private final String value;
   private final String data;
-  private final String nonce;
+  private final Optional<String> nonce;
   private final String privateFrom;
   private final List<String> privateFor;
   private final String restriction;
@@ -46,7 +48,7 @@ public class PrivateTransaction {
       final List<String> privateFor,
       final String restriction) {
     this.from = from;
-    this.nonce = nonce;
+    this.nonce = Optional.ofNullable(nonce);
     this.gasPrice = gasPrice;
     this.gas = gas;
     this.to = to;
@@ -82,7 +84,7 @@ public class PrivateTransaction {
 
   public static PrivateTransaction createEtherTransaction(
       final String from,
-      final BigInteger nonce,
+      final Optional<BigInteger> nonce,
       final BigInteger gasPrice,
       final BigInteger gasLimit,
       final String to,
@@ -92,7 +94,7 @@ public class PrivateTransaction {
       final String restriction) {
     return new PrivateTransaction(
         from,
-        encodeQuantity(nonce),
+        nonce.map(Numeric::encodeQuantity).orElse(null),
         encodeQuantity(gasPrice),
         encodeQuantity(gasLimit),
         to,
@@ -127,7 +129,7 @@ public class PrivateTransaction {
     return data;
   }
 
-  public String getNonce() {
+  public Optional<String> getNonce() {
     return nonce;
   }
 

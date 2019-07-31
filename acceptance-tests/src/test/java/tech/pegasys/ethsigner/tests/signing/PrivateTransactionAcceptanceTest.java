@@ -20,6 +20,7 @@ import static tech.pegasys.ethsigner.tests.dsl.Contracts.GAS_LIMIT;
 import static tech.pegasys.ethsigner.tests.dsl.Contracts.GAS_PRICE;
 import static tech.pegasys.ethsigner.tests.dsl.PrivateTransaction.RESTRICTED;
 
+import java.util.Optional;
 import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcErrorResponse;
 import tech.pegasys.ethsigner.tests.AcceptanceTestBase;
 import tech.pegasys.ethsigner.tests.dsl.PrivateTransaction;
@@ -59,7 +60,26 @@ public class PrivateTransactionAcceptanceTest extends AcceptanceTestBase {
     final PrivateTransaction transaction =
         PrivateTransaction.createEtherTransaction(
             richBenefactor().address(),
-            richBenefactor().nextNonceAndIncrement(),
+            Optional.of(richBenefactor().nextNonceAndIncrement()),
+            GAS_PRICE,
+            GAS_LIMIT,
+            RECIPIENT,
+            BigInteger.ONE,
+            enclavePublicKey(),
+            singletonList(enclavePublicKey()),
+            RESTRICTED);
+
+    final SignerResponse<JsonRpcErrorResponse> signerResponse =
+        ethSigner().privateContracts().submitExceptional(transaction);
+    assertThat(signerResponse.jsonRpc().getError()).isEqualTo(INVALID_PARAMS);
+  }
+
+  @Test
+  public void valueTransferWithNonZeroValue() {
+    final PrivateTransaction transaction =
+        PrivateTransaction.createEtherTransaction(
+            richBenefactor().address(),
+            Optional.empty(),
             GAS_PRICE,
             GAS_LIMIT,
             RECIPIENT,
