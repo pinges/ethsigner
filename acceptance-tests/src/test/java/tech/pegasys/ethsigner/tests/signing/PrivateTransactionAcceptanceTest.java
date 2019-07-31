@@ -20,7 +20,6 @@ import static tech.pegasys.ethsigner.tests.dsl.Contracts.GAS_LIMIT;
 import static tech.pegasys.ethsigner.tests.dsl.Contracts.GAS_PRICE;
 import static tech.pegasys.ethsigner.tests.dsl.PrivateTransaction.RESTRICTED;
 
-import java.util.Optional;
 import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcErrorResponse;
 import tech.pegasys.ethsigner.tests.AcceptanceTestBase;
 import tech.pegasys.ethsigner.tests.dsl.PrivateTransaction;
@@ -28,6 +27,7 @@ import tech.pegasys.ethsigner.tests.dsl.signer.SignerResponse;
 import tech.pegasys.ethsigner.tests.signing.contract.generated.SimpleStorage;
 
 import java.math.BigInteger;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +75,7 @@ public class PrivateTransactionAcceptanceTest extends AcceptanceTestBase {
   }
 
   @Test
-  public void valueTransferWithNonZeroValue() {
+  public void valueTransferWithoutNonce() {
     final PrivateTransaction transaction =
         PrivateTransaction.createEtherTransaction(
             richBenefactor().address(),
@@ -83,7 +83,7 @@ public class PrivateTransactionAcceptanceTest extends AcceptanceTestBase {
             GAS_PRICE,
             GAS_LIMIT,
             RECIPIENT,
-            BigInteger.ONE,
+            BigInteger.ZERO,
             enclavePublicKey(),
             singletonList(enclavePublicKey()),
             RESTRICTED);
